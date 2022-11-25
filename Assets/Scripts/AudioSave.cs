@@ -1,13 +1,18 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
+
+
 
 public class AudioSave : MonoBehaviour
 {
-	public AudioSource source = null;
-	public AudioClip clip = null;
+	public AudioSource source;
+	public AudioClip clip;
+	public XRAPI api;
 	private float[] clip_data;
 
 	private int channels;
@@ -37,18 +42,24 @@ public class AudioSave : MonoBehaviour
 
 		output_sample = new float[samples];
 		new_clip = AudioClip.Create("TestClip", samples, channels, rate, false);
+
+		var cd = Directory.GetCurrentDirectory();
+		string audiopath = "Assets/Audio/speech.wav";
+		Debug.Log(cd);
+		api.GenerateRequest();
 	}
 
     // Update is called once per frame
     void Update()
     {
-		AudioListener.GetOutputData(output_sample, 0);
-		Debug.Log(output_sample[10].ToString());
+		/*AudioListener.GetOutputData(output_sample, 0);
+		Debug.Log(output_sample[10].ToString());*/
 		//new_clip.SetData(output_sample, 0);
 		//SavWav.Save("TestClip", new_clip);
     }
 
 }
+
 
 public static class SavWav
 {
