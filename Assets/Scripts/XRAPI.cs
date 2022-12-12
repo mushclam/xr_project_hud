@@ -3,9 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.Windows;
 using TMPro;
+
+using Random = UnityEngine.Random;
 
 public class XRAPI : MonoBehaviour
 {
@@ -13,16 +16,44 @@ public class XRAPI : MonoBehaviour
 
     public string audio_name;
     public string audio_class;
-    public TextMeshProUGUI tmp;
+    public GameObject indicator;
+    public List<GameObject> indicatorList;
     // Start is called before the first frame update
-    private void Update()
+    private void Start()
     {
-        tmp.text = audio_class;
+
     }
 
-    public void GenerateRequest()
+    public IEnumerator GenerateRequest(Canvas canvas)
     {
-        StartCoroutine(ProcessRequest(URL));
+        RectTransform coord = canvas.transform as RectTransform;
+        float range = coord.rect.height / 2;
+
+        while (true)
+        {
+            // Destroy previous objects
+            foreach (GameObject obj in indicatorList)
+            {
+                Destroy(obj);
+            }
+
+            // Inference audio files
+            //StartCoroutine(ProcessRequest());
+
+            // Instantiate indicators
+            GameObject text = Instantiate(indicator) as GameObject;
+            text.transform.SetParent(canvas.transform, false);
+
+            // Set text
+            text.GetComponent<TextMeshProUGUI>().text = audio_name;
+            // Set Local Position
+            float x = Random.Range(-1.0f, 1.0f) * range;
+            float y = Random.Range(-1.0f, 1.0f) * range;
+            text.transform.localPosition = new Vector2(x, y);
+            indicatorList.Add(text);
+
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     private IEnumerator ProcessRequest(string uri)

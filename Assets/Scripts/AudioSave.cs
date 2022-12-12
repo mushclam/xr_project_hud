@@ -4,6 +4,7 @@ using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Networking;
 
 
@@ -13,6 +14,8 @@ public class AudioSave : MonoBehaviour
 	public AudioSource source;
 	public AudioClip clip;
 	public XRAPI api;
+	public Canvas canvas;
+
 	private float[] clip_data;
 
 	private int channels;
@@ -22,6 +25,7 @@ public class AudioSave : MonoBehaviour
 	private int rate;
 	private float[] output_sample;
 	private AudioClip new_clip;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -46,7 +50,8 @@ public class AudioSave : MonoBehaviour
 		var cd = Directory.GetCurrentDirectory();
 		string audiopath = "Assets/Audio/speech.wav";
 		Debug.Log(cd);
-		api.GenerateRequest();
+
+		StartCoroutine(api.GenerateRequest(canvas));
 	}
 
     // Update is called once per frame
