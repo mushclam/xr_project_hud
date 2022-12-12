@@ -17,7 +17,9 @@ public class XRAPI : MonoBehaviour
     public string audio_name;
     public string audio_class;
     public GameObject indicator;
-    public List<GameObject> indicatorList;
+    private List<GameObject> indicatorList = new List<GameObject>();
+
+    private static readonly WaitForSeconds wait = new WaitForSeconds(1f);
     // Start is called before the first frame update
     private void Start()
     {
@@ -31,36 +33,50 @@ public class XRAPI : MonoBehaviour
 
         while (true)
         {
+            string result = "";
+            // Inference audio files
+            yield return StartCoroutine(
+                ProcessRequest((tag) =>
+                {
+                    result = tag;
+                })
+            );
+
             // Destroy previous objects
             foreach (GameObject obj in indicatorList)
             {
                 Destroy(obj);
             }
 
-            // Inference audio files
-            //StartCoroutine(ProcessRequest());
-
             // Instantiate indicators
             GameObject text = Instantiate(indicator) as GameObject;
             text.transform.SetParent(canvas.transform, false);
 
             // Set text
-            text.GetComponent<TextMeshProUGUI>().text = audio_name;
+            text.GetComponent<TextMeshProUGUI>().text = result;
             // Set Local Position
             float x = Random.Range(-1.0f, 1.0f) * range;
             float y = Random.Range(-1.0f, 1.0f) * range;
             text.transform.localPosition = new Vector2(x, y);
             indicatorList.Add(text);
 
-            yield return new WaitForSeconds(1f);
+            yield return wait;
         }
     }
 
-    private IEnumerator ProcessRequest(string uri)
+    private IEnumerator ProcessRequest(Action<string> callback)
     {
         // Audio file Information
-        string filepath = "Assets/Audio/" + audio_name;
-        var bytes = File.ReadAllBytes(filepath);
+        string filepath = "Assets/Audio/" + audio_name + ".wav";
+        Byte[] bytes;
+        if (File.Exists(filepath))
+        {
+            bytes = File.ReadAllBytes(filepath);
+        }
+        else
+        {
+            yield break;
+        }
         var filename = audio_name;
 
         // Generate multipart data-form
@@ -78,9 +94,8 @@ public class XRAPI : MonoBehaviour
         Buffer.BlockCopy(terminate, 0, body, formSections.Length, terminate.Length);
         // Set the content type -NO QUOTES around the boundary
         string contentType = String.Concat("multipart/form-data; boundary=\"", Encoding.UTF8.GetString(boundary), "\"");
-        Debug.Log(contentType);
 
-        UnityWebRequest request = UnityWebRequest.Post(uri, formData, boundary);
+        UnityWebRequest request = UnityWebRequest.Post(URL, formData, boundary);
         request.uploadHandler = new UploadHandlerRaw(body);
         request.uploadHandler.contentType = contentType;
         request.downloadHandler = new DownloadHandlerBuffer();
@@ -95,7 +110,10 @@ public class XRAPI : MonoBehaviour
         else
         {
             audio_class = request.downloadHandler.text[2..^2];
-            Debug.Log(audio_class);
+            //Debug.Log(audio_class);
+            callback(audio_class);
         }
+
+        request.Dispose();
     }
 }
