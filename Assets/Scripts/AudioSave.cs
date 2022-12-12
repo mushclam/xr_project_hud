@@ -26,31 +26,41 @@ public class AudioSave : MonoBehaviour
 	private float[] output_sample;
 	private AudioClip new_clip;
 
+	private int n = 0;
+
+	private WaitForSeconds wait = new WaitForSeconds(1f);
+
     // Start is called before the first frame update
     void Start()
     {
 		// var samples = clip.samples;
 		rate = AudioSettings.outputSampleRate;
-		Debug.Log(rate.ToString());
+		samples = rate * 1;
+		channels = 1;
+		Debug.Log("Sample Rate: " + rate.ToString());
+		Debug.Log("Sample Length: " + samples.ToString());
+		Debug.Log("Channels: " + channels.ToString());
 
 		source.Play();
-		samples = source.clip.samples;
-		channels = source.clip.channels;
-		frequency = source.clip.frequency;
-		clip_data = new float[samples];
-		source.clip.GetData(clip_data, 0);
+		//samples = source.clip.samples;
+		//channels = source.clip.channels;
+		//frequency = source.clip.frequency;
 
-		Debug.Log(samples.ToString());
-		Debug.Log(channels.ToString());
-		Debug.Log(frequency.ToString());
+		//Debug.Log(samples.ToString());
+		//Debug.Log(channels.ToString());
+		//Debug.Log(frequency.ToString());
+
+		//var cd = Directory.GetCurrentDirectory();
+		//Debug.Log(cd);
+
+		//clip_data = new float[samples];
+		//source.clip.GetData(clip_data, 0);
+		//new_clip = AudioClip.Create("TestClip", samples, channels, rate, false);
+		//new_clip.SetData(clip_data, 0);
+		//SavWav.Save("test", new_clip);
 
 		output_sample = new float[samples];
-		new_clip = AudioClip.Create("TestClip", samples, channels, rate, false);
-
-		var cd = Directory.GetCurrentDirectory();
-		string audiopath = "Assets/Audio/speech.wav";
-		Debug.Log(cd);
-
+		//StartCoroutine(ListenToFile());
 		StartCoroutine(api.GenerateRequest(canvas));
 	}
 
@@ -61,8 +71,49 @@ public class AudioSave : MonoBehaviour
 		Debug.Log(output_sample[10].ToString());*/
 		//new_clip.SetData(output_sample, 0);
 		//SavWav.Save("TestClip", new_clip);
+		//float[] total = new float[8192 * 50];
+  //      float[] spectrum = new float[8192];
+
+  //      //AudioListener.GetSpectrumData(spectrum, 0, FFTWindow.Rectangular);
+		//if (n < 50)
+  //      {
+		//	AudioListener.GetOutputData(spectrum, 0);
+		//	spectrum.CopyTo(total, n * 8192);
+		//	n++;
+  //      }
+
+		//if (n == 50)
+  //      {
+		//	AudioClip tmp = AudioClip.Create("tmp", 8192 * 50, channels, rate, false);
+		//	tmp.SetData(total, 0);
+		//	SavWav.Save("test" + n.ToString(), tmp);
+		//}
+
+		//Debug.Log(n.ToString());
+
+        //for (int i = 1; i < spectrum.Length - 1; i++)
+        //{
+        //    Debug.DrawLine(new Vector3(i - 1, spectrum[i] + 10, 0), new Vector3(i, spectrum[i + 1] + 10, 0), Color.red);
+        //    Debug.DrawLine(new Vector3(i - 1, Mathf.Log(spectrum[i - 1]) + 10, 2), new Vector3(i, Mathf.Log(spectrum[i]) + 10, 2), Color.cyan);
+        //    Debug.DrawLine(new Vector3(Mathf.Log(i - 1), spectrum[i - 1] - 10, 1), new Vector3(Mathf.Log(i), spectrum[i] - 10, 1), Color.green);
+        //    Debug.DrawLine(new Vector3(Mathf.Log(i - 1), Mathf.Log(spectrum[i - 1]), 3), new Vector3(Mathf.Log(i), Mathf.Log(spectrum[i]), 3), Color.blue);
+        //}
     }
 
+	public IEnumerator ListenToFile()
+    {
+		Debug.Log("Start Listening");
+		int n = 0;
+		while (true)
+        {
+			AudioListener.GetOutputData(output_sample, 0);
+			AudioClip tmp = AudioClip.Create("tmp", samples, channels, rate, false);
+			tmp.SetData(output_sample, 0);
+			SavWav.Save("test"+n.ToString(), tmp);
+			n++;
+			yield return wait;
+		}
+    }
 }
 
 
@@ -93,6 +144,8 @@ public static class SavWav
 			WriteHeader(fileStream, clip);
 		}
 
+		Debug.Log("File Saved.");
+
 		return true; // TODO: return false if there's a failure saving the file
 	}
 
@@ -107,10 +160,10 @@ public static class SavWav
 
 	public static AudioClip TrimSilence(List<float> samples, float min, int channels, int hz)
 	{
-		return TrimSilence(samples, min, channels, hz, false, false);
+		return TrimSilence(samples, min, channels, hz, false);
 	}
 
-	public static AudioClip TrimSilence(List<float> samples, float min, int channels, int hz, bool _3D, bool stream)
+	public static AudioClip TrimSilence(List<float> samples, float min, int channels, int hz, bool stream)
 	{
 		int i;
 
@@ -134,7 +187,7 @@ public static class SavWav
 
 		samples.RemoveRange(i, samples.Count - i);
 
-		var clip = AudioClip.Create("TempClip", samples.Count, channels, hz, _3D, stream);
+		var clip = AudioClip.Create("TempClip", samples.Count, channels, hz, stream);
 
 		clip.SetData(samples.ToArray(), 0);
 
