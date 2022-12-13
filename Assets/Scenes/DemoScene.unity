@@ -935,6 +935,8 @@ GameObject:
   m_Component:
   - component: {fileID: 993519337}
   - component: {fileID: 993519338}
+  - component: {fileID: 993519340}
+  - component: {fileID: 993519339}
   m_Layer: 0
   m_Name: speech
   m_TagString: Untagged
@@ -1053,6 +1055,31 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &993519339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993519336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a11ee830c3bf4774abc586cd826a3bb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!135 &993519340
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993519336}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 5
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1028513131
 GameObject:
   m_ObjectHideFlags: 0
