@@ -49,17 +49,20 @@ public class XRAPI : MonoBehaviour
                 Destroy(obj);
             }
 
-            // Instantiate indicators
-            GameObject text = Instantiate(indicator) as GameObject;
-            text.transform.SetParent(canvas.transform, false);
+            if (result != "Silence")
+            {
+                // Instantiate indicators
+                GameObject text = Instantiate(indicator) as GameObject;
+                text.transform.SetParent(canvas.transform, false);
 
-            // Set text
-            text.GetComponent<TextMeshProUGUI>().text = result;
-            // Set Local Position
-            float x = Random.Range(-1.0f, 1.0f) * range;
-            float y = Random.Range(-1.0f, 1.0f) * range;
-            text.transform.localPosition = new Vector2(x, y);
-            indicatorList.Add(text);
+                // Set text
+                text.GetComponent<TextMeshProUGUI>().text = result;
+                // Set Local Position
+                float x = Random.Range(-1.0f, 1.0f) * range;
+                float y = Random.Range(-1.0f, 1.0f) * range;
+                text.transform.localPosition = new Vector2(x, y);
+                indicatorList.Add(text);
+            }
         }
     }
 
