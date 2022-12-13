@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - CinemachineTarget
+  - ambulance
+  - car
+  - children
+  - dog
+  - train
   layers:
   - Default
   - TransparentFX

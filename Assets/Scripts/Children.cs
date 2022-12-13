@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Ambulance : MonoBehaviour
+public class Children : MonoBehaviour
 {
     private AudioSource myAudio;
     private SphereCollider myCollider;
@@ -30,7 +30,7 @@ public class Ambulance : MonoBehaviour
     {
         if(other.gameObject.tag == "Player")
         {
-            Debug.Log("Object class : Ambulance");
+            Debug.Log("Object class : Children");
             Debug.Log("Object position : "+transform.position);
             myAudio.Play();
         }
