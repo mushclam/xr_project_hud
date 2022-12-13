@@ -4,20 +4,34 @@ using UnityEngine;
 
 public class Ambulance : MonoBehaviour
 {
+    private AudioSource myAudio;
+    private SphereCollider myCollider;
+    private bool playing = false;
     // Start is called before the first frame update
     void Start()
     {
-        
+        myAudio = GetComponent<AudioSource>();
+        myCollider = GetComponent<SphereCollider>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        if (myAudio.isPlaying)
+        {
+            myCollider.enabled = false;
+        }
+        else
+        {
+            myCollider.enabled = true;
+        }
     }
-    private void onTriggerEnter(Collider other)
+
+    private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.tag == "Player")
+        {
+            myAudio.Play();
             Debug.Log("ambulance crash!!!");
+        }
     }
 }
