@@ -17,6 +17,8 @@ public class AudioSave : MonoBehaviour
 
 	[SerializeField]
     private int interval = 5;
+	private int deliveredSamples = 2048;
+	private int deliveredChannels = 2;
     private int sampleRate;
 
 	private float[] outputSample;
@@ -38,10 +40,8 @@ public class AudioSave : MonoBehaviour
 		// initialize time interval to avoid error
 		if (interval <= 0) interval = 5;
 		// Length for audio file
-		maxAudioLength = sampleRate * interval;
+		maxAudioLength = deliveredSamples * (int)Mathf.Ceil((float)sampleRate/(float)deliveredSamples) * interval * deliveredChannels;
 		outputSample = new float[maxAudioLength];
-		Debug.Log("Sample Rate: " + sampleRate.ToString());
-		Debug.Log("Sample Length: " + maxAudioLength.ToString());
 	}
 
 	// Start is called before the first frame update
@@ -59,10 +59,10 @@ public class AudioSave : MonoBehaviour
     {
 		if (!audioReadRunning) return;
 
-		if (currentAudioLength + data.Length > maxAudioLength)
-        {
-			data = data[..(maxAudioLength - currentAudioLength)];
-        }
+		//if (currentAudioLength + data.Length > maxAudioLength)
+  //      {
+		//	data = data[..(maxAudioLength - currentAudioLength)];
+  //      }
         try
         {
 			data.CopyTo(outputSample, currentAudioLength);
@@ -72,9 +72,9 @@ public class AudioSave : MonoBehaviour
 			{
 				currentAudioLength = 0;
 				var timeStamp = (long)(DateTime.UtcNow - originTime).TotalSeconds;
-				// Save audio to temp wav file
-				SaveFloatToWav.Save(savePath, timeStamp.ToString(), outputSample, sampleRate, channels);
 				var filepath = Path.Combine(savePath, timeStamp.ToString() + ".wav");
+				// Save audio to temp wav file
+				SaveFloatToWav.Save(filepath, outputSample, sampleRate, channels);
 				// Send wav file to inference api
 				api.audioQueue.Enqueue(filepath);
             }
@@ -91,15 +91,8 @@ public static class SaveFloatToWav
 {
 	const int HEADER_SIZE = 44;
 
-	public static bool Save(string dir, string filename, float[] audioArr, int hz, int channels)
+	public static bool Save(string filepath, float[] audioArr, int hz, int channels)
 	{
-		if (!filename.ToLower().EndsWith(".wav"))
-		{
-			filename += ".wav";
-		}
-
-		var filepath = Path.Combine(dir, filename);
-
 		// Make sure directory exists if user is saving to sub dir.
 		Directory.CreateDirectory(Path.GetDirectoryName(filepath));
 
@@ -119,47 +112,6 @@ public static class SaveFloatToWav
 			Debug.Log("File Do Not Saved.");
 			return false;
         }
-	}
-
-	public static AudioClip TrimSilence(AudioClip clip, float min)
-	{
-		var samples = new float[clip.samples];
-		clip.GetData(samples, 0);
-		return TrimSilence(new List<float>(samples), min, clip.channels, clip.frequency);
-	}
-
-	public static AudioClip TrimSilence(List<float> samples, float min, int channels, int hz)
-	{
-		return TrimSilence(samples, min, channels, hz, false);
-	}
-
-	public static AudioClip TrimSilence(List<float> samples, float min, int channels, int hz, bool stream)
-	{
-		int i;
-
-		for (i = 0; i < samples.Count; i++)
-		{
-			if (Mathf.Abs(samples[i]) > min)
-			{
-				break;
-			}
-		}
-
-		samples.RemoveRange(0, i);
-
-		for (i = samples.Count - 1; i > 0; i--)
-		{
-			if (Mathf.Abs(samples[i]) > min)
-			{
-				break;
-			}
-		}
-
-		samples.RemoveRange(i, samples.Count - i);
-		var clip = AudioClip.Create("TempClip", samples.Count, channels, hz, stream);
-		clip.SetData(samples.ToArray(), 0);
-
-		return clip;
 	}
 
 	static FileStream CreateEmpty(string filepath)
