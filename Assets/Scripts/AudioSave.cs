@@ -23,6 +23,8 @@ public class AudioSave : MonoBehaviour
 	private static int maxAudioLength;
 	private int currentAudioLength = 0;
 
+	private bool audioReadRunning;
+
 	private string savePath;
 	private WaitForSeconds wait = new WaitForSeconds(1f);
 	private DateTime originTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
@@ -33,27 +35,30 @@ public class AudioSave : MonoBehaviour
 		savePath = Application.persistentDataPath;
 		// Output Sample Rate
 		sampleRate = AudioSettings.outputSampleRate;
-    }
-
-	// Start is called before the first frame update
-	void Start()
-    {
 		// initialize time interval to avoid error
 		if (interval <= 0) interval = 5;
-
 		// Length for audio file
 		maxAudioLength = sampleRate * interval;
 		outputSample = new float[maxAudioLength];
 		Debug.Log("Sample Rate: " + sampleRate.ToString());
 		Debug.Log("Sample Length: " + maxAudioLength.ToString());
+	}
+
+	// Start is called before the first frame update
+	void Start()
+    {	
 		// Deprecated when add audio play trigger
 		source.Play();
 		// Start inference displaying UI
 		StartCoroutine(api.GenerateRequest(canvas));
+		// Set running
+		audioReadRunning = true;
 	}
 
 	void OnAudioFilterRead(float[] data, int channels)
     {
+		if (!audioReadRunning) return;
+
 		if (currentAudioLength + data.Length > maxAudioLength)
         {
 			data = data[..(maxAudioLength - currentAudioLength)];
@@ -67,9 +72,12 @@ public class AudioSave : MonoBehaviour
 			{
 				currentAudioLength = 0;
 				var timeStamp = (long)(DateTime.UtcNow - originTime).TotalSeconds;
-
-				SaveFloatToWav.Save(savePath, "audio"+timeStamp.ToString(), outputSample, sampleRate, channels);
+				// Save audio to temp wav file
+				SaveFloatToWav.Save(savePath, timeStamp.ToString(), outputSample, sampleRate, channels);
 				// Send wav file to inference api
+
+				// Remove temp wav file
+				// File.Delete(savePath + timeStamp.ToString() + ".wav");
 			}
         }
         catch

@@ -20,11 +20,6 @@ public class XRAPI : MonoBehaviour
     private List<GameObject> indicatorList = new List<GameObject>();
 
     private static readonly WaitForSeconds wait = new WaitForSeconds(1f);
-    // Start is called before the first frame update
-    private void Start()
-    {
-
-    }
 
     public IEnumerator GenerateRequest(Canvas canvas)
     {
