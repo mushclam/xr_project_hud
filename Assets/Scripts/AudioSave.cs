@@ -49,11 +49,11 @@ public class AudioSave : MonoBehaviour
     {	
 		// Deprecated when add audio play trigger
 		source.Play();
-		// Start inference displaying UI
-		StartCoroutine(api.GenerateRequest(canvas));
-		// Set running
-		audioReadRunning = true;
-	}
+        // Set running
+        audioReadRunning = true;
+        // Start inference displaying UI
+        StartCoroutine(api.InferenceAudioAndDraw(canvas));
+    }
 
 	void OnAudioFilterRead(float[] data, int channels)
     {
@@ -74,14 +74,14 @@ public class AudioSave : MonoBehaviour
 				var timeStamp = (long)(DateTime.UtcNow - originTime).TotalSeconds;
 				// Save audio to temp wav file
 				SaveFloatToWav.Save(savePath, timeStamp.ToString(), outputSample, sampleRate, channels);
+				var filepath = Path.Combine(savePath, timeStamp.ToString() + ".wav");
 				// Send wav file to inference api
-
-				// Remove temp wav file
-				// File.Delete(savePath + timeStamp.ToString() + ".wav");
-			}
+				api.audioQueue.Enqueue(filepath);
+            }
         }
-        catch
+        catch (Exception e)
         {
+			Debug.Log(e.ToString());
 			Debug.Log("Error.");
         }
     }

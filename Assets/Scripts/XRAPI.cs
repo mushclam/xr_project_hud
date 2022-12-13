@@ -14,24 +14,30 @@ public class XRAPI : MonoBehaviour
 {
     private const string URL = "http://xrproject.mushclam.com/predict";
 
-    public string audio_name;
-    public string audio_class;
+    public Queue<string> audioQueue = new Queue<string>();
+
     public GameObject indicator;
     private List<GameObject> indicatorList = new List<GameObject>();
 
     private static readonly WaitForSeconds wait = new WaitForSeconds(1f);
+    private static WaitWhile waitWhile;
 
-    public IEnumerator GenerateRequest(Canvas canvas)
+    public IEnumerator InferenceAudioAndDraw(Canvas canvas)
     {
         RectTransform coord = canvas.transform as RectTransform;
         float range = coord.rect.height / 2;
 
+        waitWhile = new WaitWhile(() => audioQueue.Count <= 0);
+
         while (true)
         {
-            string result = "";
+            yield return waitWhile;
+            var filepath = audioQueue.Dequeue();
+
             // Inference audio files
+            string result = "";
             yield return StartCoroutine(
-                ProcessRequest((tag) =>
+                ProcessRequest(filepath, (tag) =>
                 {
                     result = tag;
                 })
@@ -54,15 +60,12 @@ public class XRAPI : MonoBehaviour
             float y = Random.Range(-1.0f, 1.0f) * range;
             text.transform.localPosition = new Vector2(x, y);
             indicatorList.Add(text);
-
-            yield return wait;
         }
     }
 
-    private IEnumerator ProcessRequest(Action<string> callback)
+    private IEnumerator ProcessRequest(string filepath, Action<string> callback)
     {
         // Audio file Information
-        string filepath = "Assets/Audio/" + audio_name + ".wav";
         Byte[] bytes;
         if (File.Exists(filepath))
         {
@@ -72,7 +75,8 @@ public class XRAPI : MonoBehaviour
         {
             yield break;
         }
-        var filename = audio_name;
+        string[] paths = filepath.Split("/");
+        string filename = paths[paths.Length - 1];
 
         // Generate multipart data-form
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
@@ -90,25 +94,24 @@ public class XRAPI : MonoBehaviour
         // Set the content type -NO QUOTES around the boundary
         string contentType = String.Concat("multipart/form-data; boundary=\"", Encoding.UTF8.GetString(boundary), "\"");
 
-        UnityWebRequest request = UnityWebRequest.Post(URL, formData, boundary);
-        request.uploadHandler = new UploadHandlerRaw(body);
-        request.uploadHandler.contentType = contentType;
-        request.downloadHandler = new DownloadHandlerBuffer();
-        request.SetRequestHeader("Content-Type", contentType);
-
-        yield return request.SendWebRequest();
-
-        if (request.result != UnityWebRequest.Result.Success)
+        using (UnityWebRequest request = UnityWebRequest.Post(URL, formData, boundary))
         {
-            Debug.Log(request.error);
-        }
-        else
-        {
-            audio_class = request.downloadHandler.text[2..^2];
-            //Debug.Log(audio_class);
-            callback(audio_class);
-        }
+            request.uploadHandler = new UploadHandlerRaw(body);
+            request.uploadHandler.contentType = contentType;
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", contentType);
 
-        request.Dispose();
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(request.error);
+            }
+            else
+            {
+                var audio_class = request.downloadHandler.text[2..^2];
+                callback(audio_class);
+            }
+        }
     }
 }
