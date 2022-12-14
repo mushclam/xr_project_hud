@@ -1424,6 +1424,7 @@ MonoBehaviour:
   sounds: []
   generablePositions: {fileID: 0}
   generableSounds: 3
+  generableRange: 5
 --- !u!1001 &1979352518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1559,6 +1560,7 @@ MonoBehaviour:
   - {fileID: 1433762734405726371, guid: 1afc072caab23bd4287ee40337ae2241, type: 3}
   generablePositions: {fileID: 1570948017}
   generableSounds: 3
+  generableRange: 3
 --- !u!114 &2006620068 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8616685848737228376, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}

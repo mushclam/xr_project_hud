@@ -46,12 +46,6 @@ public class XRAPI : MonoBehaviour
             // Remove used audio temp file
             StartCoroutine(RemoveAudioFile(filepath));
 
-            // Destroy previous objects
-            foreach (GameObject obj in indicatorList)
-            {
-                Destroy(obj);
-            }
-
             if (result != "Silence")
             {
                 // Instantiate indicators
@@ -64,6 +58,7 @@ public class XRAPI : MonoBehaviour
                 float x = Random.Range(-1.0f, 1.0f) * range;
                 float y = Random.Range(-1.0f, 1.0f) * range;
                 text.transform.localPosition = new Vector2(x, y);
+                Destroy(text, 1);
                 indicatorList.Add(text);
             }
         }
@@ -73,6 +68,18 @@ public class XRAPI : MonoBehaviour
     {
         File.Delete(filepath);
         yield return null;
+    }
+
+    private IEnumerator RemoveObject()
+    {
+        while (true)
+        {
+
+            foreach (GameObject obj in indicatorList)
+            {
+                Destroy(obj);
+            }
+        }
     }
 
     private IEnumerator ProcessRequest(string filepath, Action<string> callback)

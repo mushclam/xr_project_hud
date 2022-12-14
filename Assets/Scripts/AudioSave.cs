@@ -52,8 +52,6 @@ public class AudioSave : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
     {	
-		// Deprecated when add audio play trigger
-		source.Play();
         // Set running
         audioReadRunning = true;
 		// Start inference displaying UI

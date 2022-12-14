@@ -6,7 +6,7 @@ public class SoundObject : MonoBehaviour
 {
     private AudioSource myAudio;
     private SphereCollider myCollider;
-    private string name;
+    private string AudioName;
     private Vector3 position;
     private bool startTrigger = false;
     // Start is called before the first frame update
@@ -14,7 +14,7 @@ public class SoundObject : MonoBehaviour
     {
         myAudio = GetComponent<AudioSource>();
         myCollider = GetComponent<SphereCollider>();
-        name = myAudio.name;
+        AudioName = myAudio.name;
         position = transform.position;
         startTrigger = true;
     }
@@ -24,7 +24,7 @@ public class SoundObject : MonoBehaviour
         if (!startTrigger) return;
         if (other.gameObject.tag == "Player")
         {
-            Debug.Log("Object class : " + name);
+            Debug.Log("Object class : " + AudioName);
             Debug.Log("Object position : " + position);
             myAudio.Play();
         }
