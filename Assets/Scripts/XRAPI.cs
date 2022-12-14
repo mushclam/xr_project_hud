@@ -10,6 +10,7 @@ using TMPro;
 
 using Random = UnityEngine.Random;
 
+
 public class XRAPI : MonoBehaviour
 {
     private const string URL = "http://xrproject.mushclam.com/predict";

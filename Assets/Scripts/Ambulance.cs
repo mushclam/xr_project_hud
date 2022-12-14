@@ -14,23 +14,23 @@ public class Ambulance : MonoBehaviour
         myCollider = GetComponent<SphereCollider>();
     }
 
-    private void Update()
-    {
-        if (myAudio.isPlaying)
-        {
-            myCollider.enabled = false;
-        }
-        else
-        {
-            myCollider.enabled = true;
-        }
-    }
+    //private void Update()
+    //{
+    //    if (myAudio.isPlaying)
+    //    {
+    //        myCollider.enabled = false;
+    //    }
+    //    else
+    //    {
+    //        myCollider.enabled = true;
+    //    }
+    //}
 
     private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.tag == "Player")
         {
-            Debug.Log("Object class : Ambulance");
+            Debug.Log("Object class : "+myAudio.name);
             Debug.Log("Object position : "+transform.position);
             myAudio.Play();
         }
