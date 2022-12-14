@@ -123,11 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &152010339 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5739698998690087621, guid: 09aade0ecefd01e4b8f7661acf64f5c2, type: 3}
-  m_PrefabInstance: {fileID: 2084445384}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &211483458
 GameObject:
   m_ObjectHideFlags: 0
@@ -1420,7 +1415,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b72b5bfc1ace2a46b747b7d699978e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ground: {fileID: 0}
+  skeleton: {fileID: 0}
   sounds: []
   generablePositions: {fileID: 0}
   generableSounds: 3
@@ -1555,12 +1550,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b72b5bfc1ace2a46b747b7d699978e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ground: {fileID: 152010339}
+  skeleton: {fileID: 1433762734405726371, guid: 1afc072caab23bd4287ee40337ae2241, type: 3}
   sounds:
-  - {fileID: 1433762734405726371, guid: 1afc072caab23bd4287ee40337ae2241, type: 3}
+  - {fileID: 8300000, guid: 7684bf0bf33d16d4187a3a73a03310d5, type: 3}
+  - {fileID: 8300000, guid: e9529a0ac8aeb6b4cbfd6d7329249b9b, type: 3}
+  - {fileID: 8300000, guid: 666b97cb3f07f0f47b202055356abeac, type: 3}
+  - {fileID: 8300000, guid: 8cd5820329164064885bb1b883aa0759, type: 3}
+  - {fileID: 8300000, guid: d312279b750681949a3f926056b28d07, type: 3}
+  - {fileID: 8300000, guid: eb4f87181a5a0354dbcd387fe312c19d, type: 3}
   generablePositions: {fileID: 1570948017}
   generableSounds: 3
-  generableRange: 3
+  generableRange: 2
 --- !u!114 &2006620068 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8616685848737228376, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
