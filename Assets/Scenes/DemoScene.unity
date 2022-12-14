@@ -404,7 +404,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 50, y: -50}
-  m_SizeDelta: {x: 400, y: 50}
+  m_SizeDelta: {x: 800, y: 50}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &465672587
 MonoBehaviour:
@@ -426,7 +426,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Test: 0'
+  m_text: 'Test: 0 (Ready)'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1846,6 +1846,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skeleton: {fileID: 0}
   sounds: []
+  materials: []
   generablePositions: {fileID: 0}
   generableSounds: 3
   generableRange: 5
@@ -2035,6 +2036,13 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 8cd5820329164064885bb1b883aa0759, type: 3}
   - {fileID: 8300000, guid: d312279b750681949a3f926056b28d07, type: 3}
   - {fileID: 8300000, guid: eb4f87181a5a0354dbcd387fe312c19d, type: 3}
+  materials:
+  - {fileID: 2100000, guid: bf6a51de1245f9f40a15c37caf02df5b, type: 2}
+  - {fileID: 2100000, guid: 68b1108f8cf927443ac42bc37ba706fb, type: 2}
+  - {fileID: 2100000, guid: 75e0e4def632bb442a3088ab46c54766, type: 2}
+  - {fileID: 2100000, guid: f68fcf86dd885fb4286262cc592746a8, type: 2}
+  - {fileID: 2100000, guid: dd80a89c9e63e8e40bad726dcab3713d, type: 2}
+  - {fileID: 2100000, guid: 3947e29afb8a2db40ac0c373da3f43fe, type: 2}
   generablePositions: {fileID: 1570948017}
   generableSounds: 4
   generableRange: 2

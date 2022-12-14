@@ -34,6 +34,7 @@ public class EvaluationManager : MonoBehaviour
         for (int i = 0; i < maxTest; i++)
         {
             testNumber.text = "Test: " + i;
+
             generator.Generate();
             navigator.agent.enabled = true;
             navigator.agent.destination = navigator.destination.position;
@@ -42,6 +43,7 @@ public class EvaluationManager : MonoBehaviour
             generator.Degenerate();
             navigator.agent.enabled = false;
             player.transform.position = Vector3.zero;
+            testNumber.text = "Test: " + (i+1) + "(Ready)";
             yield return wait;
         }
     }

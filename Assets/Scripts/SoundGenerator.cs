@@ -8,6 +8,7 @@ public class SoundGenerator : MonoBehaviour
 {
     public GameObject skeleton;
     public AudioClip[] sounds;
+    public Material[] materials;
     public GameObject generablePositions;
     public int generableSounds = 3;
     public float generableRange = 3f;
@@ -57,9 +58,10 @@ public class SoundGenerator : MonoBehaviour
             if (position.magnitude > generableRange) position = position.normalized;
 
             GameObject sound = Instantiate(skeleton, generablePositionsChildren[indices[i]]) as GameObject;
+            sound.transform.localPosition = position;
             sound.name = sounds[soundIndex].name;
             sound.GetComponent<AudioSource>().clip = sounds[soundIndex];
-            sound.transform.localPosition = position;
+            sound.GetComponent<MeshRenderer>().material = materials[soundIndex];
             generatedSounds.Add(sound);
         }
     }
