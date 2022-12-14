@@ -17,14 +17,17 @@ public class AudioSave : MonoBehaviour
 
 	[SerializeField]
     private int interval = 5;
+	private int minInterval = 1;
 	private int deliveredSamples = 2048;
 	private int deliveredChannels = 2;
     private int sampleRate;
 
 	private float[] outputSample;
 	private static int maxAudioLength;
+	private static int minAudioLength;
 	private int currentAudioLength = 0;
 
+	private Queue<float[]> audioQueue = new Queue<float[]>();
 	private bool audioReadRunning;
 
 	private string savePath;
@@ -40,7 +43,10 @@ public class AudioSave : MonoBehaviour
 		// initialize time interval to avoid error
 		if (interval <= 0) interval = 5;
 		// Length for audio file
-		maxAudioLength = deliveredSamples * (int)Mathf.Ceil((float)sampleRate/(float)deliveredSamples) * interval * deliveredChannels;
+		var audioLength = deliveredSamples * (int)Mathf.Ceil((float)sampleRate / (float)deliveredSamples) * deliveredChannels;
+		maxAudioLength = audioLength * interval;
+		minAudioLength = audioLength * minInterval;
+
 		outputSample = new float[maxAudioLength];
 	}
 
@@ -51,7 +57,8 @@ public class AudioSave : MonoBehaviour
 		source.Play();
         // Set running
         audioReadRunning = true;
-        // Start inference displaying UI
+		// Start inference displaying UI
+		StartCoroutine(SaveAudio());
         StartCoroutine(api.InferenceAudioAndDraw(canvas));
     }
 
@@ -68,23 +75,41 @@ public class AudioSave : MonoBehaviour
 			data.CopyTo(outputSample, currentAudioLength);
 			currentAudioLength += data.Length;
 
+			if (currentAudioLength % minAudioLength == 0)
+			{
+				audioQueue.Enqueue(outputSample);
+            }
 			if (currentAudioLength >= maxAudioLength)
 			{
-				currentAudioLength = 0;
-				var timeStamp = (long)(DateTime.UtcNow - originTime).TotalSeconds;
-				var filepath = Path.Combine(savePath, timeStamp.ToString() + ".wav");
-				// Save audio to temp wav file
-				SaveFloatToWav.Save(filepath, outputSample, sampleRate, channels);
-				// Send wav file to inference api
-				api.audioQueue.Enqueue(filepath);
-            }
-        }
+				currentAudioLength -= minAudioLength;
+				outputSample[minAudioLength..].CopyTo(outputSample, 0);
+			}
+		}
         catch (Exception e)
         {
 			Debug.Log(e.ToString());
 			Debug.Log("Error.");
         }
     }
+
+	IEnumerator SaveAudio()
+    {
+		yield return new WaitUntil(() => audioReadRunning);
+
+		var waitWhile = new WaitWhile(() => audioQueue.Count <= 0);
+
+		while (true)
+        {
+			yield return waitWhile;
+			var outputSample = audioQueue.Dequeue();
+			var timeStamp = (long)(DateTime.UtcNow - originTime).TotalSeconds;
+			var filepath = Path.Combine(savePath, timeStamp.ToString() + ".wav");
+			// Save audio to temp wav file
+			SaveFloatToWav.Save(filepath, outputSample, sampleRate, deliveredChannels);
+			// Send wav file to inference api
+			api.audioQueue.Enqueue(filepath);
+        }
+	}
 }
 
 public static class SaveFloatToWav

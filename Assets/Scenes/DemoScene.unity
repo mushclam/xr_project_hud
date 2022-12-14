@@ -310,7 +310,7 @@ MonoBehaviour:
   source: {fileID: 993519338}
   api: {fileID: 545078429}
   canvas: {fileID: 627985512}
-  interval: 10
+  interval: 5
 --- !u!114 &545078429
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,8 +323,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4367792d190904b468e6625626118134, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audio_name: speech
-  audio_class: 
   indicator: {fileID: 8771147731412406309, guid: 3b8b6eb5dc2ef594dbadad87a22b54b4, type: 3}
 --- !u!1 &627985508
 GameObject:

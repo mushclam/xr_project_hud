@@ -42,6 +42,8 @@ public class XRAPI : MonoBehaviour
                     result = tag;
                 })
             );
+            // Remove used audio temp file
+            StartCoroutine(RemoveAudioFile(filepath));
 
             // Destroy previous objects
             foreach (GameObject obj in indicatorList)
@@ -64,6 +66,12 @@ public class XRAPI : MonoBehaviour
                 indicatorList.Add(text);
             }
         }
+    }
+
+    private IEnumerator RemoveAudioFile(string filepath)
+    {
+        File.Delete(filepath);
+        yield return null;
     }
 
     private IEnumerator ProcessRequest(string filepath, Action<string> callback)
