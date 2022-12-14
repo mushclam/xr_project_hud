@@ -16,8 +16,8 @@ public class AudioSave : MonoBehaviour
 	public Canvas canvas;
 
 	[SerializeField]
-    private int interval = 5;
-	private int minInterval = 1;
+    private float interval = 5f;
+	private float minInterval = 0.5f;
 	private int deliveredSamples = 2048;
 	private int deliveredChannels = 2;
     private int sampleRate;
@@ -44,8 +44,8 @@ public class AudioSave : MonoBehaviour
 		if (interval <= 0) interval = 5;
 		// Length for audio file
 		var audioLength = deliveredSamples * (int)Mathf.Ceil((float)sampleRate / (float)deliveredSamples) * deliveredChannels;
-		maxAudioLength = audioLength * interval;
-		minAudioLength = audioLength * minInterval;
+		maxAudioLength = (int)(audioLength * interval);
+		minAudioLength = (int)(audioLength * minInterval);
 
 		outputSample = new float[maxAudioLength];
 	}
