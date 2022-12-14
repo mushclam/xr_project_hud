@@ -13,11 +13,31 @@ public class SoundGenerator : MonoBehaviour
     public float generableRange = 3f;
 
     private Transform[] generablePositionsChildren;
+    private List<GameObject> generatedSounds = new List<GameObject>();
 
     // Start is called before the first frame update
     void Start()
     {
-        generablePositionsChildren = generablePositions.GetComponentsInChildren<Transform>().Where(t => t != generablePositions.transform).ToArray();
+        //generablePositionsChildren = generablePositions.GetComponentsInChildren<Transform>();
+        //generablePositionsChildren = generablePositionsChildren.Where(t => t != generablePositions.transform).ToArray();
+        //Generate();
+    }
+
+    public void Setup()
+    {
+        generablePositionsChildren = generablePositions.GetComponentsInChildren<Transform>();
+        generablePositionsChildren = generablePositionsChildren.Where(t => t != generablePositions.transform).ToArray();
+    }
+
+    public void Regenerate()
+    {
+        Degenerate();
+
+        Generate();
+    }
+
+    public void Generate()
+    {
         int[] indices = Enumerable.Range(0, generablePositionsChildren.Length).ToArray();
         indices = Shuffle<int>(indices);
 
@@ -40,6 +60,15 @@ public class SoundGenerator : MonoBehaviour
             sound.name = sounds[soundIndex].name;
             sound.GetComponent<AudioSource>().clip = sounds[soundIndex];
             sound.transform.localPosition = position;
+            generatedSounds.Add(sound);
+        }
+    }
+
+    public void Degenerate()
+    {
+        foreach (GameObject sound in generatedSounds)
+        {
+            Destroy(sound);
         }
     }
 

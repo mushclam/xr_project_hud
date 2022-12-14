@@ -131,6 +131,7 @@ public class XRAPI : MonoBehaviour
                 var audio_class = request.downloadHandler.text[2..^2];
                 callback(audio_class);
             }
+            request.Dispose();
         }
     }
 }

@@ -126,7 +126,7 @@ public static class SaveFloatToWav
 				WriteHeader(fileStream, audioArr.Length, hz, channels);
 			}
 
-			Debug.Log("File Saved.");
+			//Debug.Log("File Saved.");
 			return true;
         }
         catch
