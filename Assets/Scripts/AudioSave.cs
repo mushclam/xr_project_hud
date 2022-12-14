@@ -12,133 +12,131 @@ using UnityEngine.Networking;
 public class AudioSave : MonoBehaviour
 {
 	public AudioSource source;
-	public AudioClip clip;
 	public XRAPI api;
 	public Canvas canvas;
 
-	private float[] clip_data;
+	[SerializeField]
+    private float interval = 5f;
+	private float minInterval = 0.5f;
+	private int deliveredSamples = 2048;
+	private int deliveredChannels = 2;
+    private int sampleRate;
 
-	private int channels;
-	private int frequency;
+	private float[] outputSample;
+	private static int maxAudioLength;
+	private static int minAudioLength;
+	private int currentAudioLength = 0;
 
-	private int samples;
-	private int rate;
-	private float[] output_sample;
-	private AudioClip new_clip;
+	private Queue<float[]> audioQueue = new Queue<float[]>();
+	private bool audioReadRunning;
 
-    // Start is called before the first frame update
-    void Start()
+	private string savePath;
+	private WaitForSeconds wait = new WaitForSeconds(1f);
+	private DateTime originTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+
+	void Awake()
     {
-		// var samples = clip.samples;
-		rate = AudioSettings.outputSampleRate;
-		Debug.Log(rate.ToString());
+		// Path to save temporary audio files
+		savePath = Application.persistentDataPath;
+		// Output Sample Rate
+		sampleRate = AudioSettings.outputSampleRate;
+		// initialize time interval to avoid error
+		if (interval <= 0) interval = 5;
+		// Length for audio file
+		var audioLength = deliveredSamples * (int)Mathf.Ceil((float)sampleRate / (float)deliveredSamples) * deliveredChannels;
+		maxAudioLength = (int)(audioLength * interval);
+		minAudioLength = (int)(audioLength * minInterval);
 
-		source.Play();
-		samples = source.clip.samples;
-		channels = source.clip.channels;
-		frequency = source.clip.frequency;
-		clip_data = new float[samples];
-		source.clip.GetData(clip_data, 0);
-
-		Debug.Log(samples.ToString());
-		Debug.Log(channels.ToString());
-		Debug.Log(frequency.ToString());
-
-		output_sample = new float[samples];
-		new_clip = AudioClip.Create("TestClip", samples, channels, rate, false);
-
-		var cd = Directory.GetCurrentDirectory();
-		string audiopath = "Assets/Audio/speech.wav";
-		Debug.Log(cd);
-
-		StartCoroutine(api.GenerateRequest(canvas));
+		outputSample = new float[maxAudioLength];
 	}
 
-    // Update is called once per frame
-    void Update()
-    {
-		/*AudioListener.GetOutputData(output_sample, 0);
-		Debug.Log(output_sample[10].ToString());*/
-		//new_clip.SetData(output_sample, 0);
-		//SavWav.Save("TestClip", new_clip);
+	// Start is called before the first frame update
+	void Start()
+    {	
+		// Deprecated when add audio play trigger
+		source.Play();
+        // Set running
+        audioReadRunning = true;
+		// Start inference displaying UI
+		StartCoroutine(SaveAudio());
+        StartCoroutine(api.InferenceAudioAndDraw(canvas));
     }
 
+	void OnAudioFilterRead(float[] data, int channels)
+    {
+		if (!audioReadRunning) return;
+
+		//if (currentAudioLength + data.Length > maxAudioLength)
+  //      {
+		//	data = data[..(maxAudioLength - currentAudioLength)];
+  //      }
+        try
+        {
+			data.CopyTo(outputSample, currentAudioLength);
+			currentAudioLength += data.Length;
+
+			if (currentAudioLength % minAudioLength == 0)
+			{
+				audioQueue.Enqueue(outputSample);
+            }
+			if (currentAudioLength >= maxAudioLength)
+			{
+				currentAudioLength -= minAudioLength;
+				outputSample[minAudioLength..].CopyTo(outputSample, 0);
+			}
+		}
+        catch (Exception e)
+        {
+			Debug.Log(e.ToString());
+			Debug.Log("Error.");
+        }
+    }
+
+	IEnumerator SaveAudio()
+    {
+		yield return new WaitUntil(() => audioReadRunning);
+
+		var waitWhile = new WaitWhile(() => audioQueue.Count <= 0);
+
+		while (true)
+        {
+			yield return waitWhile;
+			var outputSample = audioQueue.Dequeue();
+			var timeStamp = (long)(DateTime.UtcNow - originTime).TotalSeconds;
+			var filepath = Path.Combine(savePath, timeStamp.ToString() + ".wav");
+			// Save audio to temp wav file
+			SaveFloatToWav.Save(filepath, outputSample, sampleRate, deliveredChannels);
+			// Send wav file to inference api
+			api.audioQueue.Enqueue(filepath);
+        }
+	}
 }
 
-
-public static class SavWav
+public static class SaveFloatToWav
 {
-
 	const int HEADER_SIZE = 44;
 
-	public static bool Save(string filename, AudioClip clip)
+	public static bool Save(string filepath, float[] audioArr, int hz, int channels)
 	{
-		if (!filename.ToLower().EndsWith(".wav"))
-		{
-			filename += ".wav";
-		}
-
-		var filepath = Path.Combine(Application.persistentDataPath, filename);
-
-		Debug.Log(filepath);
-
 		// Make sure directory exists if user is saving to sub dir.
 		Directory.CreateDirectory(Path.GetDirectoryName(filepath));
 
-		using (var fileStream = CreateEmpty(filepath))
-		{
-
-			ConvertAndWrite(fileStream, clip);
-
-			WriteHeader(fileStream, clip);
-		}
-
-		return true; // TODO: return false if there's a failure saving the file
-	}
-
-	public static AudioClip TrimSilence(AudioClip clip, float min)
-	{
-		var samples = new float[clip.samples];
-
-		clip.GetData(samples, 0);
-
-		return TrimSilence(new List<float>(samples), min, clip.channels, clip.frequency);
-	}
-
-	public static AudioClip TrimSilence(List<float> samples, float min, int channels, int hz)
-	{
-		return TrimSilence(samples, min, channels, hz, false, false);
-	}
-
-	public static AudioClip TrimSilence(List<float> samples, float min, int channels, int hz, bool _3D, bool stream)
-	{
-		int i;
-
-		for (i = 0; i < samples.Count; i++)
-		{
-			if (Mathf.Abs(samples[i]) > min)
+        try
+        {
+			using (var fileStream = CreateEmpty(filepath))
 			{
-				break;
+				ConvertAndWrite(fileStream, audioArr);
+				WriteHeader(fileStream, audioArr.Length, hz, channels);
 			}
-		}
 
-		samples.RemoveRange(0, i);
-
-		for (i = samples.Count - 1; i > 0; i--)
-		{
-			if (Mathf.Abs(samples[i]) > min)
-			{
-				break;
-			}
-		}
-
-		samples.RemoveRange(i, samples.Count - i);
-
-		var clip = AudioClip.Create("TempClip", samples.Count, channels, hz, _3D, stream);
-
-		clip.SetData(samples.ToArray(), 0);
-
-		return clip;
+			Debug.Log("File Saved.");
+			return true;
+        }
+        catch
+        {
+			Debug.Log("File Do Not Saved.");
+			return false;
+        }
 	}
 
 	static FileStream CreateEmpty(string filepath)
@@ -154,13 +152,8 @@ public static class SavWav
 		return fileStream;
 	}
 
-	static void ConvertAndWrite(FileStream fileStream, AudioClip clip)
+	static void ConvertAndWrite(FileStream fileStream, float[] samples)
 	{
-
-		var samples = new float[clip.samples];
-
-		clip.GetData(samples, 0);
-
 		Int16[] intData = new Int16[samples.Length];
 		//converting in 2 float[] steps to Int16[], //then Int16[] to Byte[]
 
@@ -173,21 +166,15 @@ public static class SavWav
 		for (int i = 0; i < samples.Length; i++)
 		{
 			intData[i] = (short)(samples[i] * rescaleFactor);
-			Byte[] byteArr = new Byte[2];
-			byteArr = BitConverter.GetBytes(intData[i]);
+			Byte[] byteArr = BitConverter.GetBytes(intData[i]);
 			byteArr.CopyTo(bytesData, i * 2);
 		}
 
 		fileStream.Write(bytesData, 0, bytesData.Length);
 	}
 
-	static void WriteHeader(FileStream fileStream, AudioClip clip)
+	static void WriteHeader(FileStream fileStream, int samples, int hz, int channels)
 	{
-
-		var hz = clip.frequency;
-		var channels = clip.channels;
-		var samples = clip.samples;
-
 		fileStream.Seek(0, SeekOrigin.Begin);
 
 		Byte[] riff = System.Text.Encoding.UTF8.GetBytes("RIFF");
@@ -205,7 +192,7 @@ public static class SavWav
 		Byte[] subChunk1 = BitConverter.GetBytes(16);
 		fileStream.Write(subChunk1, 0, 4);
 
-		UInt16 two = 2;
+		//UInt16 two = 2;
 		UInt16 one = 1;
 
 		Byte[] audioFormat = BitConverter.GetBytes(one);
@@ -232,7 +219,5 @@ public static class SavWav
 
 		Byte[] subChunk2 = BitConverter.GetBytes(samples * channels * 2);
 		fileStream.Write(subChunk2, 0, 4);
-
-		//		fileStream.Close();
 	}
 }
